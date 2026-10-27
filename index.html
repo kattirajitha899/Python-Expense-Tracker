@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Expense Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 25px;
+      color: #1e293b;
+    }
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px #0001;
+    }
+    h1 { color: #2563eb; }
+    form { display: grid; gap: 12px; }
+    input, select, button {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .total { font-size: 24px; font-weight: bold; margin: 20px 0; }
+    li {
+      background: #f8fafc;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .delete { background: #dc2626; padding: 7px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Personal Expense Tracker</h1>
+    <p>Record and manage your daily expenses.</p>
+
+    <form id="expenseForm">
+      <input id="title" placeholder="Expense name (e.g. Lunch)" required>
+      <input id="amount" type="number" min="0.01" step="0.01"
+             placeholder="Amount in ₹" required>
+      <select id="category" required>
+        <option value="">Choose category</option>
+        <option>Food</option>
+        <option>Travel</option>
+        <option>Education</option>
+        <option>Shopping</option>
+        <option>Other</option>
+      </select>
+      <button type="submit">Add Expense</button>
+    </form>
+
+    <div class="total">Total: ₹<span id="total">0.00</span></div>
+    <h2>Your Expenses</h2>
+    <ul id="expenseList"></ul>
+  </div>
+
+  <script>
+    let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+
+    function renderExpenses() {
+      const list = document.getElementById("expenseList");
+      list.innerHTML = "";
+      let total = 0;
+
+      expenses.forEach((expense, index) => {
+        total += expense.amount;
+        const item = document.createElement("li");
+        const details = document.createElement("span");
+        details.textContent =
+          `${expense.title} — ₹${expense.amount.toFixed(2)} (${expense.category})`;
+        const remove = document.createElement("button");
+        remove.textContent = "Delete";
+        remove.className = "delete";
+        remove.onclick = () => {
+          expenses.splice(index, 1);
+          saveExpenses();
+        };
+        item.append(details, remove);
+        list.appendChild(item);
+      });
+
+      document.getElementById("total").textContent = total.toFixed(2);
+    }
+
+    function saveExpenses() {
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+      renderExpenses();
+    }
+
+    document.getElementById("expenseForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const amount = Number(document.getElementById("amount").value);
+      const category = document.getElementById("category").value;
+
+      if (!title || !Number.isFinite(amount) || amount <= 0 || !category) {
+        alert("Please enter valid expense details.");
+        return;
+      }
+
+      expenses.push({ title, amount, category });
+      saveExpenses();
+      event.target.reset();
+    });
+
+    renderExpenses();
+  </script>
+</body>
+</html>
